@@ -2,6 +2,10 @@
 
 A proof-of-concept implementation of a multi-agent research system inspired by [Anthropic's research architecture](https://www.anthropic.com/engineering/built-multi-agent-research-system). This system uses coordinated AI agents to conduct comprehensive research on complex queries through query decomposition, parallel research execution, and intelligent synthesis.
 
+![Anthropic Research Architecture](anthropic-article.png)
+
+*Inspired by Anthropic's approach to building multi-agent research systems*
+
 ## 🏗️ System Architecture
 
 ### Core Components
