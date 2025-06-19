@@ -90,7 +90,7 @@ def test_system_with_dummy_key() -> bool:
         system = SimpleResearchSystem(api_key="dummy-key-for-testing")
         info = system.get_system_info()
         
-        expected_keys = ['model', 'max_subtasks', 'api_configured', 'version']
+        expected_keys = ['orchestrator_model', 'research_model', 'max_subtasks', 'api_configured', 'version']
         for key in expected_keys:
             if key not in info:
                 print(f"❌ Missing key in system info: {key}")
@@ -105,9 +105,11 @@ def test_system_with_dummy_key() -> bool:
             return False
         
         print("✅ System info structure is correct")
-        print(f"   Model: {info['model']}")
+        print(f"   Orchestrator Model: {info['orchestrator_model']}")
+        print(f"   Research Model: {info['research_model']}")
         print(f"   Max Subtasks: {info['max_subtasks']}")
         print(f"   Version: {info['version']}")
+        print(f"   Architecture: {info.get('architecture', 'N/A')}")
         
         return True
         

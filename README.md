@@ -42,10 +42,18 @@ A proof-of-concept implementation of a multi-agent research system inspired by [
 ### Research Flow
 
 1. **Query Input** → User provides research question
-2. **Decomposition** → System breaks query into 3-4 focused subtasks
-3. **Parallel Research** → Multiple agents research different aspects simultaneously
-4. **Synthesis** → Combines all findings into comprehensive report
+2. **Decomposition** → **Claude Opus** breaks query into 3-4 focused subtasks
+3. **Parallel Research** → **Claude Sonnet** agents research different aspects simultaneously
+4. **Synthesis** → **Claude Opus** combines all findings into comprehensive report
 5. **Output** → Structured report with executive summary, findings, and analysis
+
+### Model Architecture
+
+Following Anthropic's original design:
+- **🧠 Claude Opus** (Orchestrator): Query decomposition, planning, and synthesis
+- **⚡ Claude Sonnet** (Research Agents): Fast, focused research on specific subtasks
+
+This architecture optimizes for both **quality** (Opus for complex reasoning) and **efficiency** (Sonnet for parallel research tasks).
 
 ### Implementation Architecture
 
@@ -231,8 +239,9 @@ Renewable energy has demonstrated significant positive economic impacts...
 # Required
 ANTHROPIC_API_KEY=sk-ant-api03-...    # Your Anthropic API key
 
-# Optional
-MODEL_NAME=claude-3-5-sonnet-20241022  # Claude model to use
+# Optional (following Anthropic's architecture)
+ORCHESTRATOR_MODEL=claude-3-opus-20240229      # Lead agent for coordination
+RESEARCH_MODEL=claude-3-5-sonnet-20241022      # Research agents for tasks
 ```
 
 ### Research Parameters

@@ -34,16 +34,19 @@ class SimpleResearchSystem:
     3. Synthesizing all findings into a comprehensive report
     """
     
-    DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
+    DEFAULT_ORCHESTRATOR_MODEL = "claude-3-opus-20240229"  # Lead agent for coordination
+    DEFAULT_RESEARCH_MODEL = "claude-3-5-sonnet-20241022"  # Research agents for tasks
     MAX_SUBTASKS = 4
     
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None) -> None:
+    def __init__(self, api_key: Optional[str] = None, orchestrator_model: Optional[str] = None, 
+                 research_model: Optional[str] = None) -> None:
         """
         Initialize the research system.
         
         Args:
             api_key: Anthropic API key. If None, loads from environment.
-            model: Claude model to use. Defaults to claude-3-5-sonnet-20241022.
+            orchestrator_model: Model for orchestration (default: Claude Opus).
+            research_model: Model for research tasks (default: Claude Sonnet).
             
         Raises:
             ResearchError: If API key is not provided or found in environment.
@@ -56,11 +59,15 @@ class SimpleResearchSystem:
                 "Anthropic API key is required. Set ANTHROPIC_API_KEY environment variable."
             )
         
-        self.model = model or os.getenv("MODEL_NAME", self.DEFAULT_MODEL)
+        # Following Anthropic's architecture: Opus for orchestration, Sonnet for research
+        self.orchestrator_model = (orchestrator_model or 
+                                 os.getenv("ORCHESTRATOR_MODEL", self.DEFAULT_ORCHESTRATOR_MODEL))
+        self.research_model = (research_model or 
+                             os.getenv("RESEARCH_MODEL", self.DEFAULT_RESEARCH_MODEL))
         
         try:
             self.client = anthropic.Anthropic(api_key=self.api_key)
-            logger.info(f"Initialized research system with model: {self.model}")
+            logger.info(f"Initialized research system - Orchestrator: {self.orchestrator_model}, Research: {self.research_model}")
         except Exception as e:
             raise ResearchError(f"Failed to initialize Anthropic client: {e}")
         
@@ -108,7 +115,8 @@ class SimpleResearchSystem:
                 "research_results": research_results,
                 "final_report": final_report,
                 "total_subtasks": len(subtasks),
-                "model_used": self.model
+                "orchestrator_model": self.orchestrator_model,
+                "research_model": self.research_model
             }
             
         except Exception as e:
@@ -131,8 +139,9 @@ class SimpleResearchSystem:
         prompt = self._build_decomposition_prompt(query)
         
         try:
+            # Use Opus for orchestration and query decomposition
             response = self.client.messages.create(
-                model=self.model,
+                model=self.orchestrator_model,
                 max_tokens=500,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -214,8 +223,9 @@ Format your response as:
         prompt = self._build_research_prompt(subtask)
         
         try:
+            # Use Sonnet for focused research tasks
             response = self.client.messages.create(
-                model=self.model,
+                model=self.research_model,
                 max_tokens=800,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -225,7 +235,7 @@ Format your response as:
                 "index": index,
                 "findings": response.content[0].text,
                 "status": "completed",
-                "model_used": self.model
+                "model_used": self.research_model
             }
             
         except Exception as e:
@@ -235,7 +245,7 @@ Format your response as:
                 "index": index,
                 "findings": f"Research failed: {e}",
                 "status": "failed",
-                "model_used": self.model
+                "model_used": self.research_model
             }
     
     def _build_research_prompt(self, subtask: str) -> str:
@@ -279,8 +289,9 @@ Requirements:
         prompt = self._build_synthesis_prompt(query, combined_findings)
         
         try:
+            # Use Opus for synthesis and complex reasoning
             response = self.client.messages.create(
-                model=self.model,
+                model=self.orchestrator_model,
                 max_tokens=1500,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -339,8 +350,10 @@ Requirements:
     def get_system_info(self) -> Dict[str, Any]:
         """Get information about the research system configuration."""
         return {
-            "model": self.model,
+            "orchestrator_model": self.orchestrator_model,
+            "research_model": self.research_model,
             "max_subtasks": self.MAX_SUBTASKS,
             "api_configured": bool(self.api_key),
-            "version": "1.0.0"
+            "version": "1.0.0",
+            "architecture": "Anthropic-inspired: Opus for orchestration, Sonnet for research"
         }

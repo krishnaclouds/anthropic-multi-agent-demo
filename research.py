@@ -32,8 +32,10 @@ def display_system_info(research_system: SimpleResearchSystem) -> None:
     info = research_system.get_system_info()
     print("🔬 Multi-Agent Research System")
     print("=" * 50)
-    print(f"Model: {info['model']}")
+    print(f"Orchestrator Model: {info['orchestrator_model']}")
+    print(f"Research Model: {info['research_model']}")
     print(f"Max Subtasks: {info['max_subtasks']}")
+    print(f"Architecture: {info['architecture']}")
     print(f"Version: {info['version']}")
     print("✅ System initialized successfully\n")
 
@@ -43,7 +45,8 @@ def display_research_results(results: dict, show_details: bool = True) -> None:
     print(f"📊 Research Results:")
     print(f"Query: {results['query']}")
     print(f"Subtasks completed: {results['total_subtasks']}")
-    print(f"Model used: {results['model_used']}")
+    print(f"Orchestrator: {results['orchestrator_model']}")
+    print(f"Research: {results['research_model']}")
     
     if show_details:
         print(f"\n📝 Subtasks Researched:")
@@ -179,9 +182,15 @@ Examples:
     )
     
     parser.add_argument(
-        '--model', '-m',
+        '--orchestrator-model',
         type=str,
-        help='Specify Claude model to use (default: claude-3-5-sonnet-20241022)'
+        help='Model for orchestration (default: claude-3-opus-20240229)'
+    )
+    
+    parser.add_argument(
+        '--research-model',
+        type=str,
+        help='Model for research tasks (default: claude-3-5-sonnet-20241022)'
     )
     
     args = parser.parse_args()
@@ -190,8 +199,11 @@ Examples:
     setup_logging(args.verbose)
     
     try:
-        # Initialize research system
-        research_system = SimpleResearchSystem(model=args.model)
+        # Initialize research system with appropriate models
+        research_system = SimpleResearchSystem(
+            orchestrator_model=args.orchestrator_model,
+            research_model=args.research_model
+        )
         display_system_info(research_system)
         
         # Run in appropriate mode
